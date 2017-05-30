@@ -1,0 +1,36 @@
+{
+  "dependencies": {
+    "babel-types": "^6.24.1",
+    "babylon": "^6.17.1",
+    "graphql": "^0.10.1",
+    "graphql-tag": "^2.2.0"
+  },
+  "description": "Compiles GraphQL tagged template strings using graphql-tag",
+  "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-helper-plugin-test-runner": "^6.24.1",
+    "babel-plugin-transform-es2015-destructuring": "^6.23.0",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.24.1",
+    "babel-plugin-transform-es2015-parameters": "^6.24.1",
+    "babel-plugin-transform-flow-strip-types": "^6.22.0",
+    "eslint": "^3.19.0",
+    "eslint-config-canonical": "^8.2.1",
+    "flow-bin": "^0.47.0",
+    "husky": "^0.13.3",
+    "mocha": "^3.4.2",
+    "semantic-release": "^6.3.6"
+  },
+  "main": "dist/index.js",
+  "name": "babel-plugin-graphql-tag",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gajus/babel-plugin-graphql-tag.git"
+  },
+  "scripts": {
+    "build": "rm -fr ./dist && NODE_ENV=production babel ./src --out-dir ./dist --source-maps --copy-files",
+    "lint": "eslint ./src && flow",
+    "precommit": "npm run test",
+    "test": " NODE_ENV=test mocha --compilers js:babel-register"
+  },
+  "version": "1.0.0"
+}
