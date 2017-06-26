@@ -15,7 +15,18 @@ export default () => {
       return head + quasi.value.raw;
     }, '');
 
-    return parse(JSON.stringify([gql(source)])).program.body[0].expression.elements[0];
+    const queryDocument = gql(source);
+
+    for (const definition of queryDocument.definitions) {
+      if (!definition.name) {
+        // eslint-disable-next-line no-console
+        console.error('query', source);
+
+        throw new Error('GraphQL query must have name.');
+      }
+    }
+
+    return parse(JSON.stringify([queryDocument])).program.body[0].expression.elements[0];
   };
 
   return {
