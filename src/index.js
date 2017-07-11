@@ -4,9 +4,7 @@ import {
   isIdentifier,
   TemplateLiteral
 } from 'babel-types';
-import {
-  parse
-} from 'babylon';
+import parse from 'babel-literal-to-ast';
 import gql from 'graphql-tag';
 import createDebug from 'debug';
 
@@ -28,7 +26,7 @@ export default () => {
       }
     }
 
-    const body = parse(JSON.stringify([queryDocument])).program.body[0].expression.elements[0];
+    const body = parse(queryDocument);
 
     debug('created a static representation', body);
 
