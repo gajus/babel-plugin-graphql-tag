@@ -8,6 +8,9 @@ import {
   parse
 } from 'babylon';
 import gql from 'graphql-tag';
+import createDebug from 'debug';
+
+const debug = createDebug('babel-plugin-graphql-tag');
 
 export default () => {
   const compile = (node: TemplateLiteral) => {
@@ -15,18 +18,21 @@ export default () => {
       return head + quasi.value.raw;
     }, '');
 
+    debug('compiling a GraphQL query', source);
+
     const queryDocument = gql(source);
 
     for (const definition of queryDocument.definitions) {
       if (!definition.name) {
-        // eslint-disable-next-line no-console
-        console.error('query', source);
-
         throw new Error('GraphQL query must have name.');
       }
     }
 
-    return parse(JSON.stringify([queryDocument])).program.body[0].expression.elements[0];
+    const body = parse(JSON.stringify([queryDocument])).program.body[0].expression.elements[0];
+
+    debug('created a static representation', body);
+
+    return body;
   };
 
   return {
@@ -40,9 +46,16 @@ export default () => {
         if (isIdentifier(path.node.tag, {
           name: 'gql'
         })) {
-          path.replaceWith(
-            compile(path.node.quasi)
-          );
+          try {
+            debug('quasi', path.node.quasi);
+
+            const body = compile(path.node.quasi);
+
+            path.replaceWith(body);
+          } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error('error', error);
+          }
         }
       }
     }
