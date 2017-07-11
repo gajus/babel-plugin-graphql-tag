@@ -7,6 +7,20 @@
 
 Compiles GraphQL tagged template strings using [graphql-tag](https://github.com/apollographql/graphql-tag).
 
+## Motivation
+
+Compiling GraphQL queries at the build time:
+
+* reduces the script initialization time; and
+* removes the `graphql-tag` dependency
+
+Removing the `graphql-tag` dependecy from the bundle saves approx. 50 KB.
+
+## Implementation
+
+* Searches for imports of `graphql-tag` and removes them.
+* Searches for [tagged template literals](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Template_literals) with `gql` identifier and compiles them using `graphql-tag`.
+
 ## Example compilation
 
 Input:
@@ -58,8 +72,3 @@ const foo = {
 };
 
 ```
-
-## Implementation
-
-* Searches for imports of `graphql-tag` and removes them.
-* Searches for [tagged template literals](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Template_literals) with `gql` identifier and compiles them using `graphql-tag`.
