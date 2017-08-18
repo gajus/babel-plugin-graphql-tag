@@ -29,7 +29,11 @@ const foo = {
     'end': 15,
     'source': {
       'body': 'query foo {foo}',
-      'name': 'GraphQL request'
+      'name': 'GraphQL request',
+      'locationOffset': {
+        'line': 1,
+        'column': 1
+      }
     }
   }
 };
