@@ -20,9 +20,13 @@ export default () => {
 
     const queryDocument = gql(source);
 
-    for (const definition of queryDocument.definitions) {
-      if (!definition.name) {
-        throw new Error('GraphQL query must have name.');
+    // If a document contains only one operation, that operation may be unnamed:
+    // https://facebook.github.io/graphql/#sec-Language.Query-Document
+    if (queryDocument.definitions.length > 1) {
+      for (const definition of queryDocument.definitions) {
+        if (!definition.name) {
+          throw new Error('GraphQL query must have name.');
+        }
       }
     }
 
