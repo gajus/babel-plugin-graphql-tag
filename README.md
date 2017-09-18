@@ -72,3 +72,35 @@ const foo = {
 };
 
 ```
+
+### Using fragments
+
+Using GraphQL [fragments](http://graphql.org/learn/queries/#fragments) requires to:
+
+1. Define a fragment using `graphql-tag`.
+2. Append the referenced fragment as a variable to the end of the GraphQL query.
+
+Example:
+
+```js
+import gql from 'graphql-tag';
+
+const bar = gql`
+  fragment barFragment on Foo {
+    field1
+    field2
+  }
+`;
+
+const foo = gql`
+  query foo {
+    foo {
+      ...barFragment
+    }
+  }
+
+  ${bar}
+`;
+
+```
+

@@ -2,7 +2,10 @@
 
 import {
   isIdentifier,
-  TemplateLiteral
+  isMemberExpression,
+  memberExpression,
+  callExpression,
+  identifier
 } from 'babel-types';
 import parse from 'babel-literal-to-ast';
 import gql from 'graphql-tag';
@@ -11,10 +14,18 @@ import createDebug from 'debug';
 const debug = createDebug('babel-plugin-graphql-tag');
 
 export default () => {
-  const compile = (node: TemplateLiteral) => {
-    const source = node.quasis.reduce((head, quasi) => {
+  const compile = (path: Object) => {
+    const source = path.node.quasis.reduce((head, quasi) => {
       return head + quasi.value.raw;
     }, '');
+
+    const expressions = path.get('expressions');
+
+    expressions.forEach((expr) => {
+      if (!isIdentifier(expr) && !isMemberExpression(expr)) {
+        throw expr.buildCodeFrameError('Only identifiers or member expressions are allowed by this plugin as an interpolation in a graphql template literal.');
+      }
+    });
 
     debug('compiling a GraphQL query', source);
 
@@ -27,6 +38,23 @@ export default () => {
     }
 
     const body = parse(queryDocument);
+
+    if (expressions.length) {
+      const definitionsProperty = body.properties.find((property) => {
+        return property.key.value === 'definitions';
+      });
+
+      const definitionsArray = definitionsProperty.value;
+
+      const extraDefinitions = expressions.map((expr) => {
+        return memberExpression(expr.node, identifier('definitions'));
+      });
+
+      definitionsProperty.value = callExpression(
+        memberExpression(definitionsArray, identifier('concat')),
+        extraDefinitions
+      );
+    }
 
     debug('created a static representation', body);
 
@@ -47,7 +75,7 @@ export default () => {
           try {
             debug('quasi', path.node.quasi);
 
-            const body = compile(path.node.quasi);
+            const body = compile(path.get('quasi'));
 
             path.replaceWith(body);
           } catch (error) {
