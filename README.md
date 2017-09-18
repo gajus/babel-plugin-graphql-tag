@@ -73,9 +73,14 @@ const foo = {
 
 ```
 
-### With fragments
+### Using fragments
 
-Input:
+Using GraphQL [fragments](http://graphql.org/learn/queries/#fragments) requires to:
+
+1. Define a fragment using `graphql-tag`.
+2. Append the referenced fragment as a variable to the end of the GraphQL query.
+
+Example:
 
 ```js
 import gql from 'graphql-tag';
@@ -96,113 +101,6 @@ const foo = gql`
 
   ${bar}
 `;
+
 ```
 
-Output:
-
-```js
-const bar = {
-  'kind': 'Document',
-  'definitions': [{
-    'kind': 'FragmentDefinition',
-    'name': {
-      'kind': 'Name',
-      'value': 'barFragment'
-    },
-    'typeCondition': {
-      'kind': 'NamedType',
-      'name': {
-        'kind': 'Name',
-        'value': 'Foo'
-      }
-    },
-    'directives': [],
-    'selectionSet': {
-      'kind': 'SelectionSet',
-      'selections': [{
-        'kind': 'Field',
-        'alias': null,
-        'name': {
-          'kind': 'Name',
-          'value': 'field1'
-        },
-        'arguments': [],
-        'directives': [],
-        'selectionSet': null
-      }, {
-        'kind': 'Field',
-        'alias': null,
-        'name': {
-          'kind': 'Name',
-          'value': 'field2'
-        },
-        'arguments': [],
-        'directives': [],
-        'selectionSet': null
-      }]
-    }
-  }],
-  'loc': {
-    'start': 0,
-    'end': 59,
-    'source': {
-      'body': '\n  fragment barFragment on Foo {\n    field1\n    field2\n  }\n',
-      'name': 'GraphQL request',
-      'locationOffset': {
-        'line': 1,
-        'column': 1
-      }
-    }
-  }
-};
-
-const foo = {
-  'kind': 'Document',
-  'definitions': [{
-    'kind': 'OperationDefinition',
-    'operation': 'query',
-    'name': {
-      'kind': 'Name',
-      'value': 'foo'
-    },
-    'variableDefinitions': [],
-    'directives': [],
-    'selectionSet': {
-      'kind': 'SelectionSet',
-      'selections': [{
-        'kind': 'Field',
-        'alias': null,
-        'name': {
-          'kind': 'Name',
-          'value': 'foo'
-        },
-        'arguments': [],
-        'directives': [],
-        'selectionSet': {
-          'kind': 'SelectionSet',
-          'selections': [{
-            'kind': 'FragmentSpread',
-            'name': {
-              'kind': 'Name',
-              'value': 'barFragment'
-            },
-            'directives': []
-          }]
-        }
-      }]
-    }
-  }].concat(bar.definitions),
-  'loc': {
-    'start': 0,
-    'end': 60,
-    'source': {
-      'body': '\n  query foo {\n    foo {\n      ...barFragment\n    }\n  }\n\n  \n',
-      'name': 'GraphQL request',
-      'locationOffset': {
-        'line': 1,
-        'column': 1
-      }
-    }
-  }
-};
-```
