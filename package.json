@@ -2,9 +2,7 @@
   "dependencies": {
     "babel-literal-to-ast": "^0.1.2",
     "babel-types": "^6.24.1",
-    "debug": "^2.6.8",
-    "graphql": "^0.10.1",
-    "graphql-tag": "^2.2.0"
+    "debug": "^2.6.8"
   },
   "description": "Compiles GraphQL tagged template strings using graphql-tag",
   "devDependencies": {
@@ -17,12 +15,18 @@
     "eslint": "^3.19.0",
     "eslint-config-canonical": "^8.2.1",
     "flow-bin": "^0.47.0",
+    "graphql": "^0.10.1",
+    "graphql-tag": "^2.2.0",
     "husky": "^0.13.3",
     "mocha": "^3.4.2",
     "semantic-release": "^6.3.6"
   },
   "main": "dist/index.js",
   "name": "babel-plugin-graphql-tag",
+  "peerDependencies": {
+    "graphql": "^0.10.1",
+    "graphql-tag": "^2.2.0"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/gajus/babel-plugin-graphql-tag.git"
