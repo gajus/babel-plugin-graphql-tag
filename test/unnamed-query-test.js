@@ -1,7 +1,10 @@
 import { transform } from 'babel-core';
 import assert from 'assert';
 
-const fixture = "gql`type Widget { name: String } query {widget}`";
+const fixture = `
+  import gql from 'graphql-tag';
+  gql\`type Widget { name: String } query {widget}\`;
+`;
 
 describe("When given an unnamed query", () => {
   let originalError;

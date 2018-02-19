@@ -3,6 +3,7 @@
 import {
   isIdentifier,
   isMemberExpression,
+  isImportDefaultSpecifier,
   memberExpression,
   callExpression,
   identifier
@@ -67,26 +68,49 @@ export default () => {
 
   return {
     visitor: {
-      ImportDeclaration (path: Object) {
-        if (path.node.source.value === 'graphql-tag') {
-          path.remove();
-        }
-      },
-      TaggedTemplateExpression (path: Object) {
-        if (isIdentifier(path.node.tag, {
-          name: 'gql'
-        })) {
-          try {
-            debug('quasi', path.node.quasi);
+      Program (programPath: Object) {
+        const tagNames = [];
 
-            const body = compile(path.get('quasi'));
+        programPath.traverse({
+          ImportDeclaration (path: Object) {
+            if (path.node.source.value === 'graphql-tag') {
+              const defaultSpecifier = path.node.specifiers.find((specifier) => {
+                return isImportDefaultSpecifier(specifier);
+              }
+              );
 
-            path.replaceWith(body);
-          } catch (error) {
-            // eslint-disable-next-line no-console
-            console.error('error', error);
+              if (defaultSpecifier) {
+                tagNames.push(defaultSpecifier.local.name);
+
+                if (path.node.specifiers.length === 1) {
+                  path.remove();
+                } else {
+                  path.node.specifiers = path.node.specifiers.filter(
+                    (specifier) => {
+                      return specifier !== defaultSpecifier;
+                    }
+                  );
+                }
+              }
+            }
+          },
+          TaggedTemplateExpression (path: Object) {
+            if (tagNames.some((name) => {
+              return isIdentifier(path.node.tag, {name});
+            })) {
+              try {
+                debug('quasi', path.node.quasi);
+
+                const body = compile(path.get('quasi'));
+
+                path.replaceWith(body);
+              } catch (error) {
+                // eslint-disable-next-line no-console
+                console.error('error', error);
+              }
+            }
           }
-        }
+        });
       }
     }
   };
