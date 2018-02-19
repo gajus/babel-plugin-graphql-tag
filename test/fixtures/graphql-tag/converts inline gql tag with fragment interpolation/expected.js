@@ -1,3 +1,15 @@
+const _unique = definitions => {
+  const names = {};return definitions.filter(definition => {
+    if (definition.kind !== 'FragmentDefinition') {
+      return true;
+    }const name = definition.name.value;if (names[name]) {
+      return false;
+    } else {
+      names[name] = true;return true;
+    }
+  });
+};
+
 const bar = {
   'kind': 'Document',
   'definitions': [{
@@ -114,7 +126,7 @@ const baz = {
 
 const foo = {
   'kind': 'Document',
-  'definitions': [{
+  'definitions': _unique([{
     'kind': 'OperationDefinition',
     'operation': 'query',
     'name': {
@@ -154,7 +166,7 @@ const foo = {
         }
       }]
     }
-  }].concat(bar.definitions, baz.fragments.foo.definitions),
+  }].concat(bar.definitions, baz.fragments.foo.definitions)),
   'loc': {
     'start': 0,
     'end': 84,
