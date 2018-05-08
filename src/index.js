@@ -3,18 +3,41 @@
 import {
   isIdentifier,
   isMemberExpression,
+  isImportDefaultSpecifier,
+  variableDeclaration,
+  variableDeclarator,
   memberExpression,
   callExpression,
   identifier
 } from 'babel-types';
-import parse from 'babel-literal-to-ast';
+import parseLiteral from 'babel-literal-to-ast';
+import {parseExpression} from 'babylon';
 import gql from 'graphql-tag';
 import createDebug from 'debug';
 
 const debug = createDebug('babel-plugin-graphql-tag');
 
+// eslint-disable-next-line no-restricted-syntax
+const uniqueFn = parseExpression(`
+  (definitions) => {
+    const names = {};
+    return definitions.filter(definition => {
+      if (definition.kind !== 'FragmentDefinition') {
+        return true;
+      }
+      const name = definition.name.value;
+      if (names[name]) {
+        return false;
+      } else {
+        names[name] = true;
+        return true;
+      }
+    });
+  }
+`);
+
 export default () => {
-  const compile = (path: Object) => {
+  const compile = (path: Object, uniqueId) => {
     const source = path.node.quasis.reduce((head, quasi) => {
       return head + quasi.value.raw;
     }, '');
@@ -41,7 +64,8 @@ export default () => {
       }
     }
 
-    const body = parse(queryDocument);
+    const body = parseLiteral(queryDocument);
+    let uniqueUsed = false;
 
     if (expressions.length) {
       const definitionsProperty = body.properties.find((property) => {
@@ -54,38 +78,83 @@ export default () => {
         return memberExpression(expr.node, identifier('definitions'));
       });
 
-      definitionsProperty.value = callExpression(
+      const allDefinitions = callExpression(
         memberExpression(definitionsArray, identifier('concat')),
         extraDefinitions
       );
+
+      definitionsProperty.value = callExpression(
+        uniqueId,
+        [allDefinitions]
+      );
+
+      uniqueUsed = true;
     }
 
     debug('created a static representation', body);
 
-    return body;
+    return [body, uniqueUsed];
   };
 
   return {
     visitor: {
-      ImportDeclaration (path: Object) {
-        if (path.node.source.value === 'graphql-tag') {
-          path.remove();
-        }
-      },
-      TaggedTemplateExpression (path: Object) {
-        if (isIdentifier(path.node.tag, {
-          name: 'gql'
-        })) {
-          try {
-            debug('quasi', path.node.quasi);
+      Program (programPath: Object) {
+        const tagNames = [];
+        const uniqueId = programPath.scope.generateUidIdentifier('unique');
+        let uniqueUsed = false;
 
-            const body = compile(path.get('quasi'));
+        programPath.traverse({
+          ImportDeclaration (path: Object) {
+            if (path.node.source.value === 'graphql-tag') {
+              const defaultSpecifier = path.node.specifiers.find((specifier) => {
+                return (
+                isImportDefaultSpecifier(specifier)
+                );
+              });
 
-            path.replaceWith(body);
-          } catch (error) {
-            // eslint-disable-next-line no-console
-            console.error('error', error);
+              if (defaultSpecifier) {
+                tagNames.push(defaultSpecifier.local.name);
+
+                if (path.node.specifiers.length === 1) {
+                  path.remove();
+                } else {
+                  path.node.specifiers = path.node.specifiers.filter(
+                    (specifier) => {
+                      return specifier !== defaultSpecifier;
+                    }
+                  );
+                }
+              }
+            }
+          },
+          TaggedTemplateExpression (path: Object) {
+            if (tagNames.some((name) => {
+              return isIdentifier(path.node.tag, {name});
+            })) {
+              try {
+                debug('quasi', path.node.quasi);
+
+                const [body, used] = compile(path.get('quasi'), uniqueId);
+
+                uniqueUsed = uniqueUsed || used;
+
+                path.replaceWith(body);
+              } catch (error) {
+                // eslint-disable-next-line no-console
+                console.error('error', error);
+              }
+            }
           }
+        });
+
+        if (uniqueUsed) {
+          programPath.unshiftContainer(
+            'body',
+            variableDeclaration(
+              'const',
+              [variableDeclarator(uniqueId, uniqueFn)]
+            )
+          );
         }
       }
     }

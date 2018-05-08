@@ -2,6 +2,7 @@
   "dependencies": {
     "babel-literal-to-ast": "^0.1.2",
     "babel-types": "^6.24.1",
+    "babylon": "^6.18.0",
     "debug": "^2.6.8"
   },
   "description": "Compiles GraphQL tagged template strings using graphql-tag",
@@ -24,7 +25,6 @@
   "main": "dist/index.js",
   "name": "babel-plugin-graphql-tag",
   "peerDependencies": {
-    "graphql": "^0.10.1",
     "graphql-tag": "^2.2.0"
   },
   "repository": {
