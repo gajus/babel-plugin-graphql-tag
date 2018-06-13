@@ -14,6 +14,8 @@ import parseLiteral from 'babel-literal-to-ast';
 import {parseExpression} from 'babylon';
 import gql from 'graphql-tag';
 import createDebug from 'debug';
+import {print} from 'graphql';
+import crypto from 'crypto';
 
 const debug = createDebug('babel-plugin-graphql-tag');
 
@@ -37,7 +39,7 @@ const uniqueFn = parseExpression(`
 `);
 
 export default () => {
-  const compile = (path: Object, uniqueId) => {
+  const compile = (path: Object, uniqueId, opts) => {
     const source = path.node.quasis.reduce((head, quasi) => {
       return head + quasi.value.raw;
     }, '');
@@ -53,7 +55,13 @@ export default () => {
     debug('compiling a GraphQL query', source);
 
     const queryDocument = gql(source);
-
+    if (opts && opts.generateHash) {
+      // generate graphql documentId
+      const hash = crypto.createHash('sha256');
+      hash.update(Buffer.from(print(queryDocument)));
+      // $FlowFixMe inject documentId
+      queryDocument.documentId = hash.digest('base64');
+    }
     // If a document contains only one operation, that operation may be unnamed:
     // https://facebook.github.io/graphql/#sec-Language.Query-Document
     if (queryDocument.definitions.length > 1) {
@@ -65,6 +73,7 @@ export default () => {
     }
 
     const body = parseLiteral(queryDocument);
+    
     let uniqueUsed = false;
 
     if (expressions.length) {
@@ -98,7 +107,7 @@ export default () => {
 
   return {
     visitor: {
-      Program (programPath: Object) {
+      Program (programPath: Object, state: Object) {
         const tagNames = [];
         const uniqueId = programPath.scope.generateUidIdentifier('unique');
         let uniqueUsed = false;
@@ -134,7 +143,7 @@ export default () => {
               try {
                 debug('quasi', path.node.quasi);
 
-                const [body, used] = compile(path.get('quasi'), uniqueId);
+                const [body, used] = compile(path.get('quasi'), uniqueId, state.opts);
 
                 uniqueUsed = uniqueUsed || used;
 
