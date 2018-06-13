@@ -55,7 +55,13 @@ export default () => {
     debug('compiling a GraphQL query', source);
 
     const queryDocument = gql(source);
-
+    if (opts && opts.generateHash) {
+      // generate graphql documentId
+      const hash = crypto.createHash('sha256');
+      hash.update(Buffer.from(print(queryDocument)));
+      // $FlowFixMe inject documentId
+      queryDocument.documentId = hash.digest('base64');
+    }
     // If a document contains only one operation, that operation may be unnamed:
     // https://facebook.github.io/graphql/#sec-Language.Query-Document
     if (queryDocument.definitions.length > 1) {
@@ -67,13 +73,7 @@ export default () => {
     }
 
     const body = parseLiteral(queryDocument);
-    if (opts && opts.generateHash) {
-      // generate graphql documentId
-      const hash = crypto.createHash('sha256');
-      hash.update(Buffer.from(print(queryDocument)));
-      // $FlowFixMe inject documentId
-      body.documentId = hash.digest('base64');
-    }
+    
     let uniqueUsed = false;
 
     if (expressions.length) {
