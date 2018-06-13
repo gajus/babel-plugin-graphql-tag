@@ -55,15 +55,12 @@ export default () => {
     debug('compiling a GraphQL query', source);
 
     const queryDocument = gql(source);
-    if (opts && opts.generateSignature) {
+    if (opts && opts.generateHash) {
       // generate graphql documentId
-      const signer = crypto.createSign('RSA-SHA1');
-      signer.update(Buffer.from(print(queryDocument)));
+      const hash = crypto.createHash('sha256');
+      hash.update(Buffer.from(print(queryDocument)));
       // $FlowFixMe inject documentId
-      queryDocument.documentId = signer.sign(
-        Buffer.from(process.env.GRAPHQL_SIGNATURE_PRIVATE_KEY || 'default-signature'),
-        'base64'
-      );
+      queryDocument.documentId = hash.digest('base64');
     }
 
     // If a document contains only one operation, that operation may be unnamed:
