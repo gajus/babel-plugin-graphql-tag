@@ -7,26 +7,26 @@ const fixture = `
 `;
 
 describe("When given an unnamed query", () => {
-  let originalError;
+  let originalWarn;
 
   before(function() {
-    originalError = console.error;
+    originalWarn = console.warn;
   });
 
   after(function() {
-    console.error = originalError;
+    console.warn = originalWarn;
   });
 
   it('fails when there are other definitions', () => {
     const calls = [];
 
-    console.error = (...args) => calls.push(args.join(' '));
+    console.warn = (...args) => calls.push(args.join(' '));
 
     transform(fixture, {
       plugins: [['./src']]
     });
 
     assert.equal(calls.length, 1);
-    assert.equal(calls[0], 'error Error: GraphQL query must have name.');
+    assert.equal(calls[0], 'compilation skipped GraphQL query must have name.');
   });
 });

@@ -36,6 +36,23 @@ const uniqueFn = parseExpression(`
   }
 `);
 
+const removeImports = (paths, defaultSpecifiers) => {
+  for (let i = 0; i < paths.length; i++) {
+    const path = paths[i];
+    const defaultSpecifier = defaultSpecifiers[i];
+
+    if (path.node.specifiers.length === 1) {
+      path.remove();
+    } else {
+      path.node.specifiers = path.node.specifiers.filter(
+        (specifier) => {
+          return specifier !== defaultSpecifier;
+        }
+      );
+    }
+  }
+};
+
 export default () => {
   const compile = (path: Object, uniqueId) => {
     const source = path.node.quasis.reduce((head, quasi) => {
@@ -102,6 +119,9 @@ export default () => {
         const tagNames = [];
         const uniqueId = programPath.scope.generateUidIdentifier('unique');
         let uniqueUsed = false;
+        const importPaths = [];
+        const importDefaultSpecifiers = [];
+        let failed = false;
 
         programPath.traverse({
           ImportDeclaration (path: Object) {
@@ -115,15 +135,8 @@ export default () => {
               if (defaultSpecifier) {
                 tagNames.push(defaultSpecifier.local.name);
 
-                if (path.node.specifiers.length === 1) {
-                  path.remove();
-                } else {
-                  path.node.specifiers = path.node.specifiers.filter(
-                    (specifier) => {
-                      return specifier !== defaultSpecifier;
-                    }
-                  );
-                }
+                importPaths.push(path);
+                importDefaultSpecifiers.push(defaultSpecifier);
               }
             }
           },
@@ -140,13 +153,17 @@ export default () => {
 
                 path.replaceWith(body);
               } catch (error) {
+                failed = true;
                 // eslint-disable-next-line no-console
-                console.error('error', error);
+                console.warn('compilation skipped', error.message);
               }
             }
           }
         });
 
+        if (!failed) {
+          removeImports(importPaths, importDefaultSpecifiers);
+        }
         if (uniqueUsed) {
           programPath.unshiftContainer(
             'body',
