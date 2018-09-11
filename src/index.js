@@ -1,6 +1,7 @@
 // @flow
 
 import {
+  cloneDeep,
   isIdentifier,
   isMemberExpression,
   isImportDefaultSpecifier,
@@ -152,7 +153,7 @@ export default () => {
             'body',
             variableDeclaration(
               'const',
-              [variableDeclarator(uniqueId, uniqueFn)]
+              [variableDeclarator(uniqueId, cloneDeep(uniqueFn))]
             )
           );
         }
