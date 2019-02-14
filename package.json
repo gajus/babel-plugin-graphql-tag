@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "@babel/parser": "^7.3.2",
-    "babel-literal-to-ast": "^2.0.0",
+    "babel-literal-to-ast": "^2.1.0",
     "debug": "^4.1.1"
   },
   "description": "Compiles GraphQL tagged template strings using graphql-tag",
