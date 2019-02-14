@@ -1,6 +1,13 @@
 // @flow
 
-import {
+import { types } from '@babel/core';
+import { parseExpression } from '@babel/parser';
+import parseLiteral from 'babel-literal-to-ast';
+import gql from 'graphql-tag';
+import createDebug from 'debug';
+
+const debug = createDebug('babel-plugin-graphql-tag');
+const {
   cloneDeep,
   isIdentifier,
   isMemberExpression,
@@ -9,14 +16,8 @@ import {
   variableDeclarator,
   memberExpression,
   callExpression,
-  identifier
-} from 'babel-types';
-import parseLiteral from 'babel-literal-to-ast';
-import {parseExpression} from 'babylon';
-import gql from 'graphql-tag';
-import createDebug from 'debug';
-
-const debug = createDebug('babel-plugin-graphql-tag');
+  identifier,
+} = types;
 
 // eslint-disable-next-line no-restricted-syntax
 const uniqueFn = parseExpression(`
@@ -45,9 +46,11 @@ export default () => {
 
     const expressions = path.get('expressions');
 
-    expressions.forEach((expr) => {
+    expressions.forEach(expr => {
       if (!isIdentifier(expr) && !isMemberExpression(expr)) {
-        throw expr.buildCodeFrameError('Only identifiers or member expressions are allowed by this plugin as an interpolation in a graphql template literal.');
+        throw expr.buildCodeFrameError(
+          'Only identifiers or member expressions are allowed by this plugin as an interpolation in a graphql template literal.',
+        );
       }
     });
 
@@ -69,25 +72,22 @@ export default () => {
     let uniqueUsed = false;
 
     if (expressions.length) {
-      const definitionsProperty = body.properties.find((property) => {
+      const definitionsProperty = body.properties.find(property => {
         return property.key.value === 'definitions';
       });
 
       const definitionsArray = definitionsProperty.value;
 
-      const extraDefinitions = expressions.map((expr) => {
+      const extraDefinitions = expressions.map(expr => {
         return memberExpression(expr.node, identifier('definitions'));
       });
 
       const allDefinitions = callExpression(
         memberExpression(definitionsArray, identifier('concat')),
-        extraDefinitions
+        extraDefinitions,
       );
 
-      definitionsProperty.value = callExpression(
-        uniqueId,
-        [allDefinitions]
-      );
+      definitionsProperty.value = callExpression(uniqueId, [allDefinitions]);
 
       uniqueUsed = true;
     }
@@ -99,18 +99,16 @@ export default () => {
 
   return {
     visitor: {
-      Program (programPath: Object) {
+      Program(programPath: Object) {
         const tagNames = [];
         const uniqueId = programPath.scope.generateUidIdentifier('unique');
         let uniqueUsed = false;
 
         programPath.traverse({
-          ImportDeclaration (path: Object) {
+          ImportDeclaration(path: Object) {
             if (path.node.source.value === 'graphql-tag') {
-              const defaultSpecifier = path.node.specifiers.find((specifier) => {
-                return (
-                isImportDefaultSpecifier(specifier)
-                );
+              const defaultSpecifier = path.node.specifiers.find(specifier => {
+                return isImportDefaultSpecifier(specifier);
               });
 
               if (defaultSpecifier) {
@@ -119,19 +117,19 @@ export default () => {
                 if (path.node.specifiers.length === 1) {
                   path.remove();
                 } else {
-                  path.node.specifiers = path.node.specifiers.filter(
-                    (specifier) => {
-                      return specifier !== defaultSpecifier;
-                    }
-                  );
+                  path.node.specifiers = path.node.specifiers.filter(specifier => {
+                    return specifier !== defaultSpecifier;
+                  });
                 }
               }
             }
           },
-          TaggedTemplateExpression (path: Object) {
-            if (tagNames.some((name) => {
-              return isIdentifier(path.node.tag, {name});
-            })) {
+          TaggedTemplateExpression(path: Object) {
+            if (
+              tagNames.some(name => {
+                return isIdentifier(path.node.tag, { name });
+              })
+            ) {
               try {
                 debug('quasi', path.node.quasi);
 
@@ -145,19 +143,16 @@ export default () => {
                 console.error('error', error);
               }
             }
-          }
+          },
         });
 
         if (uniqueUsed) {
           programPath.unshiftContainer(
             'body',
-            variableDeclaration(
-              'const',
-              [variableDeclarator(uniqueId, cloneDeep(uniqueFn))]
-            )
+            variableDeclaration('const', [variableDeclarator(uniqueId, cloneDeep(uniqueFn))]),
           );
         }
-      }
-    }
+      },
+    },
   };
 };

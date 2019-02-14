@@ -1,4 +1,4 @@
-import { transform } from 'babel-core';
+import { transform } from '@babel/core';
 import assert from 'assert';
 
 const fixture = `
@@ -6,7 +6,7 @@ const fixture = `
   gql\`type Widget { name: String } query {widget}\`;
 `;
 
-describe("When given an unnamed query", () => {
+describe('When given an unnamed query', () => {
   let originalError;
 
   before(function() {
@@ -23,7 +23,7 @@ describe("When given an unnamed query", () => {
     console.error = (...args) => calls.push(args.join(' '));
 
     transform(fixture, {
-      plugins: [['./src']]
+      plugins: [['./src']],
     });
 
     assert.equal(calls.length, 1);
