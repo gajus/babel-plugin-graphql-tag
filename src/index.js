@@ -1,6 +1,14 @@
 // @flow
 
-import {
+import {types} from '@babel/core';
+import {declare} from '@babel/helper-plugin-utils';
+import {parseExpression} from '@babel/parser';
+import parseLiteral from 'babel-literal-to-ast';
+import gql from 'graphql-tag';
+import createDebug from 'debug';
+
+const debug = createDebug('babel-plugin-graphql-tag');
+const {
   cloneDeep,
   isIdentifier,
   isMemberExpression,
@@ -10,13 +18,7 @@ import {
   memberExpression,
   callExpression,
   identifier
-} from 'babel-types';
-import parseLiteral from 'babel-literal-to-ast';
-import {parseExpression} from 'babylon';
-import gql from 'graphql-tag';
-import createDebug from 'debug';
-
-const debug = createDebug('babel-plugin-graphql-tag');
+} = types;
 
 // eslint-disable-next-line no-restricted-syntax
 const uniqueFn = parseExpression(`
@@ -37,7 +39,9 @@ const uniqueFn = parseExpression(`
   }
 `);
 
-export default () => {
+export default declare((api) => {
+  api.assertVersion(7);
+
   const compile = (path: Object, uniqueId) => {
     const source = path.node.quasis.reduce((head, quasi) => {
       return head + quasi.value.raw;
@@ -47,7 +51,9 @@ export default () => {
 
     expressions.forEach((expr) => {
       if (!isIdentifier(expr) && !isMemberExpression(expr)) {
-        throw expr.buildCodeFrameError('Only identifiers or member expressions are allowed by this plugin as an interpolation in a graphql template literal.');
+        throw expr.buildCodeFrameError(
+          'Only identifiers or member expressions are allowed by this plugin as an interpolation in a graphql template literal.',
+        );
       }
     });
 
@@ -81,13 +87,10 @@ export default () => {
 
       const allDefinitions = callExpression(
         memberExpression(definitionsArray, identifier('concat')),
-        extraDefinitions
+        extraDefinitions,
       );
 
-      definitionsProperty.value = callExpression(
-        uniqueId,
-        [allDefinitions]
-      );
+      definitionsProperty.value = callExpression(uniqueId, [allDefinitions]);
 
       uniqueUsed = true;
     }
@@ -108,9 +111,7 @@ export default () => {
           ImportDeclaration (path: Object) {
             if (path.node.source.value === 'graphql-tag') {
               const defaultSpecifier = path.node.specifiers.find((specifier) => {
-                return (
-                isImportDefaultSpecifier(specifier)
-                );
+                return isImportDefaultSpecifier(specifier);
               });
 
               if (defaultSpecifier) {
@@ -119,19 +120,19 @@ export default () => {
                 if (path.node.specifiers.length === 1) {
                   path.remove();
                 } else {
-                  path.node.specifiers = path.node.specifiers.filter(
-                    (specifier) => {
-                      return specifier !== defaultSpecifier;
-                    }
-                  );
+                  path.node.specifiers = path.node.specifiers.filter((specifier) => {
+                    return specifier !== defaultSpecifier;
+                  });
                 }
               }
             }
           },
           TaggedTemplateExpression (path: Object) {
-            if (tagNames.some((name) => {
-              return isIdentifier(path.node.tag, {name});
-            })) {
+            if (
+              tagNames.some((name) => {
+                return isIdentifier(path.node.tag, {name});
+              })
+            ) {
               try {
                 debug('quasi', path.node.quasi);
 
@@ -151,13 +152,10 @@ export default () => {
         if (uniqueUsed) {
           programPath.unshiftContainer(
             'body',
-            variableDeclaration(
-              'const',
-              [variableDeclarator(uniqueId, cloneDeep(uniqueFn))]
-            )
+            variableDeclaration('const', [variableDeclarator(uniqueId, cloneDeep(uniqueFn))]),
           );
         }
       }
     }
   };
-};
+});
