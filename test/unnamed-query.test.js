@@ -1,4 +1,4 @@
-import { transform } from '@babel/core';
+import {transform} from '@babel/core';
 import assert from 'assert';
 
 const fixture = `
@@ -9,11 +9,11 @@ const fixture = `
 describe('When given an unnamed query', () => {
   let originalError;
 
-  before(function() {
+  beforeEach(function() {
     originalError = console.error;
   });
 
-  after(function() {
+  afterEach(function() {
     console.error = originalError;
   });
 

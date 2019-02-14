@@ -1,6 +1,5 @@
 {
   "dependencies": {
-    "@babel/core": "^7.2.2",
     "@babel/parser": "^7.3.2",
     "babel-literal-to-ast": "^2.0.0",
     "debug": "^4.1.1"
@@ -24,6 +23,7 @@
   "main": "dist/index.js",
   "name": "babel-plugin-graphql-tag",
   "peerDependencies": {
+    "@babel/core": "^7.0.0",
     "graphql-tag": "^2.2.0"
   },
   "repository": {
@@ -36,5 +36,8 @@
     "precommit": "npm run test",
     "test": " NODE_ENV=test jest"
   },
-  "version": "1.0.1"
+  "version": "1.0.1",
+  "resolutions": {
+    "jest": "^24.1.0"
+  }
 }

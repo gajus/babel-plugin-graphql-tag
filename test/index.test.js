@@ -1,2 +1,9 @@
-// eslint-disable-next-line import/no-commonjs
-require('@babel/helper-plugin-test-runner').default(__dirname);
+const path = require('path');
+const runner = require("@babel/helper-transform-fixture-test-runner").default;
+
+runner(
+  __dirname + "/fixtures",
+  path.basename(path.dirname(__dirname)),
+  {},
+  { sourceType: 'unambiguous' },
+);

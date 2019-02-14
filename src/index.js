@@ -1,6 +1,7 @@
 // @flow
 
 import {types} from '@babel/core';
+import {declare} from '@babel/helper-plugin-utils';
 import {parseExpression} from '@babel/parser';
 import parseLiteral from 'babel-literal-to-ast';
 import gql from 'graphql-tag';
@@ -38,7 +39,9 @@ const uniqueFn = parseExpression(`
   }
 `);
 
-export default () => {
+export default declare((api) => {
+  api.assertVersion(7);
+
   const compile = (path: Object, uniqueId) => {
     const source = path.node.quasis.reduce((head, quasi) => {
       return head + quasi.value.raw;
@@ -155,4 +158,4 @@ export default () => {
       }
     }
   };
-};
+});

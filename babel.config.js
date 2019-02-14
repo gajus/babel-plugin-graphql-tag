@@ -1,13 +1,14 @@
 module.exports = {
   presets: [
     [
-      '@babel/env',
+      '@babel/preset-env',
       {
+        modules: 'commonjs',
         targets: {
-          node: 8,
-        },
-      },
+          node: 8
+        }
+      }
     ],
-    '@babel/flow',
-  ],
+    '@babel/preset-flow'
+  ]
 };
