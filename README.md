@@ -104,3 +104,13 @@ const foo = gql`
 
 ```
 
+## Installation
+
+Ensure that the package exists in babel configuration:
+
+```json
+{
+  "plugins": ["babel-plugin-graphql-tag"]
+}
+
+```
