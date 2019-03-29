@@ -39,8 +39,12 @@ const uniqueFn = parseExpression(`
   }
 `);
 
-export default declare((api) => {
+export default declare((api, options) => {
   api.assertVersion(7);
+  const {
+    importName = 'graphql-tag',
+    onlyMatchImportSuffix = false
+  } = options;
 
   const compile = (path: Object, uniqueId) => {
     const source = path.node.quasis.reduce((head, quasi) => {
@@ -109,7 +113,8 @@ export default declare((api) => {
 
         programPath.traverse({
           ImportDeclaration (path: Object) {
-            if (path.node.source.value === 'graphql-tag') {
+            const pathValue = path.node.source.value;
+            if (onlyMatchImportSuffix ? pathValue.endsWith(importName) : pathValue === importName) {
               const defaultSpecifier = path.node.specifiers.find((specifier) => {
                 return isImportDefaultSpecifier(specifier);
               });

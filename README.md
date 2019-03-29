@@ -104,3 +104,7 @@ const foo = gql`
 
 ```
 
+### Options
+
+- `importName` - The name of the module import to process (default = "graphql-tag")
+- `onlyMatchImportSuffix` - Matches the end of the import instead of the entire name. Useful for relative imports, e.g. `./utils/graphql` (default = false)
