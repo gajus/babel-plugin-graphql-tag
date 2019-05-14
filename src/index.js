@@ -108,8 +108,10 @@ export default declare((api, options) => {
     visitor: {
       Program (programPath: Object) {
         const tagNames = [];
+        const pendingDeletion = [];
         const uniqueId = programPath.scope.generateUidIdentifier('unique');
         let uniqueUsed = false;
+        let hasError = false;
 
         programPath.traverse({
           ImportDeclaration (path: Object) {
@@ -121,14 +123,10 @@ export default declare((api, options) => {
 
               if (defaultSpecifier) {
                 tagNames.push(defaultSpecifier.local.name);
-
-                if (path.node.specifiers.length === 1) {
-                  path.remove();
-                } else {
-                  path.node.specifiers = path.node.specifiers.filter((specifier) => {
-                    return specifier !== defaultSpecifier;
-                  });
-                }
+                pendingDeletion.push({
+                  defaultSpecifier,
+                  path
+                });
               }
             }
           },
@@ -149,10 +147,24 @@ export default declare((api, options) => {
               } catch (error) {
                 // eslint-disable-next-line no-console
                 console.error('error', error);
+                hasError = true;
               }
             }
           }
         });
+
+        // Only delete import statement or specifier when there is no error
+        if (!hasError) {
+          for (const {defaultSpecifier, path: pathForDeletion} of pendingDeletion) {
+            if (pathForDeletion.node.specifiers.length === 1) {
+              pathForDeletion.remove();
+            } else {
+              pathForDeletion.node.specifiers = pathForDeletion.node.specifiers.filter((specifier) => {
+                return specifier !== defaultSpecifier;
+              });
+            }
+          }
+        }
 
         if (uniqueUsed) {
           programPath.unshiftContainer(
