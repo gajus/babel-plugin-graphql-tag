@@ -6,7 +6,7 @@ import {parseExpression} from '@babel/parser';
 import parseLiteral from 'babel-literal-to-ast';
 import gql from 'graphql-tag';
 import createDebug from 'debug';
-import { stripIgnoredCharacters } from 'graphql';
+import {stripIgnoredCharacters} from 'graphql';
 
 const debug = createDebug('babel-plugin-graphql-tag');
 const {
