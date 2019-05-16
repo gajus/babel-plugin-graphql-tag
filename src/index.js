@@ -6,6 +6,7 @@ import {parseExpression} from '@babel/parser';
 import parseLiteral from 'babel-literal-to-ast';
 import gql from 'graphql-tag';
 import createDebug from 'debug';
+import { stripIgnoredCharacters } from 'graphql';
 
 const debug = createDebug('babel-plugin-graphql-tag');
 const {
@@ -43,7 +44,8 @@ export default declare((api, options) => {
   api.assertVersion(7);
   const {
     importName = 'graphql-tag',
-    onlyMatchImportSuffix = false
+    onlyMatchImportSuffix = false,
+    strip = false
   } = options;
 
   const compile = (path: Object, uniqueId) => {
@@ -75,7 +77,7 @@ export default declare((api, options) => {
       }
     }
 
-    const body = parseLiteral(queryDocument);
+    const body = parseLiteral(strip ? stripIgnoredCharacters(source) : queryDocument);
     let uniqueUsed = false;
 
     if (expressions.length) {
