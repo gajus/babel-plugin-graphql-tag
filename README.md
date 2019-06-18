@@ -1,5 +1,6 @@
 # babel-plugin-graphql-tag
 
+[![GitSpo Mentions](https://gitspo.com/badges/mentions/gajus/babel-plugin-graphql-tag?style=flat-square)](https://gitspo.com/mentions/gajus/babel-plugin-graphql-tag)
 [![Travis build status](http://img.shields.io/travis/gajus/babel-plugin-graphql-tag/master.svg?style=flat-square)](https://travis-ci.org/gajus/babel-plugin-graphql-tag)
 [![NPM version](http://img.shields.io/npm/v/babel-plugin-graphql-tag.svg?style=flat-square)](https://www.npmjs.org/package/babel-plugin-graphql-tag)
 [![Canonical Code Style](https://img.shields.io/badge/code%20style-canonical-blue.svg?style=flat-square)](https://github.com/gajus/canonical)
