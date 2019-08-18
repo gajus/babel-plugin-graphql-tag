@@ -43,5 +43,5 @@
     "lint": "eslint ./src && flow",
     "test": " NODE_ENV=test jest"
   },
-  "version": "2.4.0"
+  "version": "2.5.0"
 }
