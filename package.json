@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@babel/helper-plugin-utils": "^7.0.0",
     "@babel/parser": "^7.3.2",
     "babel-literal-to-ast": "^2.1.0",
     "debug": "^4.1.1"
