@@ -1,3 +1,4 @@
+/* eslint-disable prefer-exponentiation-operator */
 // @flow
 
 import {types} from '@babel/core';
@@ -18,7 +19,7 @@ const {
   variableDeclarator,
   memberExpression,
   callExpression,
-  identifier
+  identifier,
 } = types;
 
 // eslint-disable-next-line no-restricted-syntax
@@ -45,10 +46,11 @@ export default declare((api, options) => {
   const {
     importName = 'graphql-tag',
     onlyMatchImportSuffix = false,
-    strip = false
+    strip = false,
   } = options;
 
   const compile = (path: Object, uniqueId) => {
+    // eslint-disable-next-line unicorn/no-reduce
     const source = path.node.quasis.reduce((head, quasi) => {
       return head + quasi.value.raw;
     }, '');
@@ -127,7 +129,7 @@ export default declare((api, options) => {
                 tagNames.push(defaultSpecifier.local.name);
                 pendingDeletion.push({
                   defaultSpecifier,
-                  path
+                  path,
                 });
               }
             }
@@ -151,7 +153,7 @@ export default declare((api, options) => {
                 hasError = true;
               }
             }
-          }
+          },
         });
 
         // Only delete import statement or specifier when there is no error
@@ -173,7 +175,7 @@ export default declare((api, options) => {
             variableDeclaration('const', [variableDeclarator(uniqueId, cloneDeep(uniqueFn))]),
           );
         }
-      }
-    }
+      },
+    },
   };
 });
