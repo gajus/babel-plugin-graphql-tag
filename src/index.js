@@ -14,6 +14,7 @@ const {
   cloneDeep,
   isIdentifier,
   isMemberExpression,
+  isImportSpecifier,
   isImportDefaultSpecifier,
   variableDeclaration,
   variableDeclarator,
@@ -122,6 +123,10 @@ export default declare((api, options) => {
             const pathValue = path.node.source.value;
             if (onlyMatchImportSuffix ? pathValue.endsWith(importName) : pathValue === importName) {
               const defaultSpecifier = path.node.specifiers.find((specifier) => {
+                if (isImportSpecifier(specifier)) {
+                  return specifier.local.name === 'gql';
+                }
+
                 return isImportDefaultSpecifier(specifier);
               });
 
