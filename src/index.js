@@ -144,7 +144,7 @@ export default declare((api, options) => {
 
                 uniqueUsed = uniqueUsed || used;
 
-                path.replaceWith(body);
+                path.replaceWith(cloneDeep(body));
               } catch (error) {
                 // eslint-disable-next-line no-console
                 console.error('error', error);
