@@ -1,10 +1,7 @@
 {
   "plugins": [
     [
-      "../../../../src",
-      {
-        "importName": "@apollo/client"
-      }
+      "../../../../src"
     ]
   ]
 }

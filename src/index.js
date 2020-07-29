@@ -21,6 +21,7 @@ const {
   memberExpression,
   callExpression,
   identifier,
+  isObjectPattern,
 } = types;
 
 // eslint-disable-next-line no-restricted-syntax
@@ -45,7 +46,7 @@ const uniqueFn = parseExpression(`
 export default declare((api, options) => {
   api.assertVersion(7);
   const {
-    importName = 'graphql-tag',
+    importSources = ['graphql-tag', '@apollo/client'],
     onlyMatchImportSuffix = false,
     strip = false,
   } = options;
@@ -119,24 +120,71 @@ export default declare((api, options) => {
         let hasError = false;
 
         programPath.traverse({
+          CallExpression: {
+            enter (nodePath) {
+              const callee = nodePath.get('callee');
+              const {arguments: args} = nodePath.node;
+
+              if (callee.isIdentifier() && callee.equals('name', 'require')) {
+                const [{value: pathValue}] = args;
+                if (importSources.some((source) => {
+                  return onlyMatchImportSuffix ? pathValue.endsWith(source) : pathValue === source;
+                })) {
+                  if (nodePath.parentPath.isVariableDeclarator()) {
+                    const gqlDeclaration = nodePath.parentPath.parent.declarations[0];
+
+                    if (isObjectPattern(gqlDeclaration.id)) {
+                      const gqlProperty = gqlDeclaration.id.properties.find((property) => {
+                        return property.key.name === 'gql';
+                      });
+                      tagNames.push(gqlProperty.key.name);
+
+                      if (gqlDeclaration.id.properties.length === 1) {
+                        pendingDeletion.push({
+                          defaultSpecifier: null,
+                          path: nodePath.parentPath,
+                        });
+                      }
+
+                      gqlDeclaration.id.properties = gqlDeclaration.id.properties.filter((property) => {
+                        return property.key.name !== 'gql';
+                      });
+
+                      return;
+                    }
+
+                    tagNames.push(gqlDeclaration.id.name);
+                    pendingDeletion.push({
+                      defaultSpecifier: null,
+                      path: nodePath.parentPath,
+                    });
+                  }
+                }
+              }
+            },
+          },
           ImportDeclaration (path: Object) {
             const pathValue = path.node.source.value;
-            if (onlyMatchImportSuffix ? pathValue.endsWith(importName) : pathValue === importName) {
-              const defaultSpecifier = path.node.specifiers.find((specifier) => {
-                if (isImportSpecifier(specifier)) {
-                  return specifier.local.name === 'gql';
-                }
+            const gqlSpecifier = path.node.specifiers.find((specifier) => {
+              if (isImportSpecifier(specifier)) {
+                return specifier.local.name === 'gql';
+              }
 
-                return isImportDefaultSpecifier(specifier);
-              });
-
-              if (defaultSpecifier) {
-                tagNames.push(defaultSpecifier.local.name);
-                pendingDeletion.push({
-                  defaultSpecifier,
-                  path,
+              if (isImportDefaultSpecifier(specifier)) {
+                return importSources.some((source) => {
+                  return onlyMatchImportSuffix ? pathValue.endsWith(source) : pathValue === source;
                 });
               }
+
+              return null;
+            });
+
+            if (gqlSpecifier) {
+              tagNames.push(gqlSpecifier.local.name);
+              pendingDeletion.push({
+                defaultSpecifier: gqlSpecifier,
+                path,
+              });
             }
           },
           TaggedTemplateExpression (path: Object) {
@@ -164,6 +212,10 @@ export default declare((api, options) => {
         // Only delete import statement or specifier when there is no error
         if (!hasError) {
           for (const {defaultSpecifier, path: pathForDeletion} of pendingDeletion) {
+            if (defaultSpecifier === null) {
+              pathForDeletion.remove();
+              continue;
+            }
             if (pathForDeletion.node.specifiers.length === 1) {
               pathForDeletion.remove();
             } else {

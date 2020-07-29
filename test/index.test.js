@@ -5,5 +5,5 @@ runner(
   __dirname + "/fixtures",
   path.basename(path.dirname(__dirname)),
   {},
-  { sourceType: 'unambiguous' },
+  { sourceType: 'module' },
 );
