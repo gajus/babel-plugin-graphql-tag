@@ -22,12 +22,24 @@ Removing the `graphql-tag` dependecy from the bundle saves approx. 50 KB.
 * Searches for imports of `graphql-tag` and removes them.
 * Searches for [tagged template literals](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Template_literals) with `gql` identifier and compiles them using `graphql-tag`.
 
+## Apollo v3 Disclaimer
+
+Apollo v3 asks users to import gql from `@apollo/client`, if you are using apollo client v3 you can provid plugin option `importName: '@apollo/client'`
+
+```
+plugins: [
+  ['babel-plugin-graphql-tag', { importName: '@apollo/client' }]
+]
+```
+
 ## Example compilation
 
 Input:
 
 ```js
 import gql from 'graphql-tag';
+// if using apollo v3
+import { gql } from '@apollo/client';
 
 const foo = gql`query {bar}`;
 
