@@ -22,16 +22,6 @@ Removing the `graphql-tag` dependecy from the bundle saves approx. 50 KB.
 * Searches for imports of `graphql-tag` and removes them.
 * Searches for [tagged template literals](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Template_literals) with `gql` identifier and compiles them using `graphql-tag`.
 
-## Apollo v3 Disclaimer
-
-Apollo v3 asks users to import gql from `@apollo/client`, if you are using apollo client v3 you can provid plugin option `importName: '@apollo/client'`
-
-```
-plugins: [
-  ['babel-plugin-graphql-tag', { importName: '@apollo/client' }]
-]
-```
-
 ## Example compilation
 
 Input:
@@ -86,6 +76,8 @@ const foo = {
 
 ```
 
+**NOTE: require() is also supported.**
+
 ### Using fragments
 
 Using GraphQL [fragments](http://graphql.org/learn/queries/#fragments) requires to:
@@ -119,6 +111,22 @@ const foo = gql`
 
 ### Options
 
-- `importName` - The name of the module import to process (default = "graphql-tag")
+- `importSources` - An array of names for modules to import (default = ["graphql-tag", "@apollo/client"])
 - `onlyMatchImportSuffix` - Matches the end of the import instead of the entire name. Useful for relative imports, e.g. `./utils/graphql` (default = false)
 - `strip` - Strips insignificant characters such as whitespace from the original GraphQL string literal to reduce the size of compiled AST (default = false)
+
+### Known Issues
+
+Some cases are really hard to track down:
+
+```
+const apolloClient = require('@apollo/client');
+// or
+import apolloClient from '@apollo/client';
+
+const { gql } = apolloClient;
+
+const foo = gql`...`;
+```
+
+If you have this kind of syntax, this plugin won't work for you.
