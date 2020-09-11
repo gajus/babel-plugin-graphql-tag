@@ -68,8 +68,8 @@ export default declare((api, options) => {
     });
 
     debug('compiling a GraphQL query', source);
-
-    const queryDocument = gql(strip ? stripIgnoredCharacters(source) : source);
+    const finalSource = strip ? stripIgnoredCharacters(source) : source;
+    let queryDocument = gql(strip ? stripIgnoredCharacters(finalSource) : finalSource);
 
     // If a document contains only one operation, that operation may be unnamed:
     // https://facebook.github.io/graphql/#sec-Language.Query-Document
@@ -79,6 +79,10 @@ export default declare((api, options) => {
           throw new Error('GraphQL query must have name.');
         }
       }
+    }
+
+    if (options.transform && options.transform) {
+      queryDocument = options.transform(finalSource, queryDocument);
     }
 
     const body = parseLiteral(queryDocument);

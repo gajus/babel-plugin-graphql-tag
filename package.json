@@ -13,6 +13,7 @@
     "@babel/helper-transform-fixture-test-runner": "^7.1.2",
     "@babel/preset-env": "^7.3.1",
     "@babel/preset-flow": "^7.0.0",
+    "cross-env": "^7.0.2",
     "eslint": "^5.13.0",
     "eslint-config-canonical": "^21.0.2",
     "flow-bin": "^0.93.0",
@@ -40,9 +41,9 @@
     "jest": "^24.1.0"
   },
   "scripts": {
-    "build": "rm -fr ./dist && NODE_ENV=production babel ./src --out-dir ./dist --source-maps --copy-files",
+    "build": "rm -fr ./dist && cross-env NODE_ENV=production babel ./src --out-dir ./dist --source-maps --copy-files",
     "lint": "eslint ./src && flow",
-    "test": " NODE_ENV=test jest"
+    "test": "cross-env NODE_ENV=test jest"
   },
   "version": "3.0.0"
 }
