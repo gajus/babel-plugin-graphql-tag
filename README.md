@@ -15,7 +15,7 @@ Compiling GraphQL queries at the build time:
 * reduces the script initialization time; and
 * removes the `graphql-tag` dependency
 
-Removing the `graphql-tag` dependecy from the bundle saves approx. 50 KB.
+Removing the `graphql-tag` dependency from the bundle saves approx. 50 KB.
 
 ## Implementation
 
