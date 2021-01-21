@@ -1,0 +1,12 @@
+{
+  "plugins": [
+    [
+      "../../../../src",
+      {
+        "importSources": ["@apollo/client", "primary-gateway-graphql-tag"],
+        "gqlTagIdentifiers": ["gql", "gqlTagPrimaryGateway"],
+        "strip": true
+      }
+    ]
+  ]
+}

@@ -111,10 +111,11 @@ const foo = gql`
 
 ### Options
 
-- `importSources` - An array of names for modules to import (default = ["graphql-tag", "@apollo/client"])
+- `importSources` - An array of names for modules to import (default = `["graphql-tag", "@apollo/client"]`)
 - `onlyMatchImportSuffix` - Matches the end of the import instead of the entire name. Useful for relative imports, e.g. `./utils/graphql` (default = false)
 - `strip` - Strips insignificant characters such as whitespace from the original GraphQL string literal to reduce the size of compiled AST (default = false)
 - `transform` - By default, grapqhl query strings will be replaced with their AST representations, but you can override that behavior and do whatever you like. One possible use case would be to implement persisted queries:
+- `gqlTagIdentifiers` - An array of names for gql tag identifiers (default = `["gql"]`)
 
 ```js
 // babel.config.js
@@ -134,8 +135,6 @@ plugins: [
     ]
 ]
 ```
-
-
 
 ### Known Issues
 

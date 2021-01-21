@@ -47,9 +47,12 @@ export default declare((api, options) => {
   api.assertVersion(7);
   const {
     importSources = ['graphql-tag', '@apollo/client'],
+    gqlTagIdentifiers = ['gql'],
     onlyMatchImportSuffix = false,
     strip = false,
   } = options;
+
+  const gqlTagIdentifiersSet = new Set(gqlTagIdentifiers);
 
   const compile = (path: Object, uniqueId) => {
     // eslint-disable-next-line unicorn/no-reduce
@@ -139,7 +142,7 @@ export default declare((api, options) => {
 
                     if (isObjectPattern(gqlDeclaration.id)) {
                       const gqlProperty = gqlDeclaration.id.properties.find((property) => {
-                        return property.key.name === 'gql';
+                        return gqlTagIdentifiersSet.has(property.key.name);
                       });
                       tagNames.push(gqlProperty.key.name);
 
@@ -151,7 +154,7 @@ export default declare((api, options) => {
                       }
 
                       gqlDeclaration.id.properties = gqlDeclaration.id.properties.filter((property) => {
-                        return property.key.name !== 'gql';
+                        return !gqlTagIdentifiersSet.has(property.key.name);
                       });
 
                       return;
@@ -171,7 +174,7 @@ export default declare((api, options) => {
             const pathValue = path.node.source.value;
             const gqlSpecifier = path.node.specifiers.find((specifier) => {
               if (isImportSpecifier(specifier)) {
-                return specifier.local.name === 'gql';
+                return gqlTagIdentifiersSet.has(specifier.local.name);
               }
 
               if (isImportDefaultSpecifier(specifier)) {
