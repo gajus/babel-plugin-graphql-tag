@@ -11,6 +11,7 @@ import {stripIgnoredCharacters} from 'graphql';
 
 const debug = createDebug('babel-plugin-graphql-tag');
 const {
+  addComment,
   cloneDeep,
   isIdentifier,
   isMemberExpression,
@@ -23,6 +24,8 @@ const {
   identifier,
   isObjectPattern,
 } = types;
+
+const PURE_ANNOTATION = '#__PURE__';
 
 // eslint-disable-next-line no-restricted-syntax
 const uniqueFn = parseExpression(`
@@ -108,6 +111,12 @@ export default declare((api, options) => {
       );
 
       definitionsProperty.value = callExpression(uniqueId, [allDefinitions]);
+
+      // Marking these function calls with an annotation indicating that
+      // they're pure will allow bundlers like Webpack and Rollup to more
+      // aggressively remove unused queries from bundles.
+      addComment(allDefinitions, 'leading', PURE_ANNOTATION);
+      addComment(definitionsProperty.value, 'leading', PURE_ANNOTATION);
 
       uniqueUsed = true;
     }

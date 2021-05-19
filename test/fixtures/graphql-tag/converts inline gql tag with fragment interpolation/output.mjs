@@ -122,7 +122,7 @@ const baz = {
 };
 const foo = {
   "kind": "Document",
-  "definitions": _unique([{
+  "definitions": /*#__PURE__*/_unique( /*#__PURE__*/[{
     "kind": "OperationDefinition",
     "operation": "query",
     "name": {
