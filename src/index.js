@@ -60,7 +60,7 @@ export default declare((api, options) => {
   const compile = (path: Object, uniqueId) => {
     // eslint-disable-next-line unicorn/no-reduce
     const source = path.node.quasis.reduce((head, quasi) => {
-      return head + quasi.value.raw;
+      return head + quasi.value.cooked;
     }, '');
 
     const expressions = path.get('expressions');
@@ -128,7 +128,7 @@ export default declare((api, options) => {
 
   return {
     visitor: {
-      Program (programPath: Object) {
+      Program (programPath: Object, state: Object) {
         const tagNames = [];
         const pendingDeletion = [];
         const uniqueId = programPath.scope.generateUidIdentifier('unique');
@@ -217,8 +217,18 @@ export default declare((api, options) => {
 
                 path.replaceWith(cloneDeep(body));
               } catch (error) {
+                // We can recover gracefully from errors, but we want to
+                // provide the user with enough context so that they can understand
+                // where errors are coming from and attempt to fix them.
+                const startLocation = path.node.quasi.loc.start;
+                const stringifiedLocation = `${startLocation.line}:${startLocation.column}`;
+                const filename = state.file.opts.filename;
+
                 // eslint-disable-next-line no-console
-                console.error('error', error);
+                console.error(`babel-plugin-graphql-tag: error parsing tag at ${filename}:${stringifiedLocation}`);
+                // eslint-disable-next-line no-console
+                console.error(error);
+
                 hasError = true;
               }
             }
