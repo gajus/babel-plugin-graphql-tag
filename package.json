@@ -32,7 +32,8 @@
   "name": "babel-plugin-graphql-tag",
   "peerDependencies": {
     "@babel/core": "^7.0.0",
-    "graphql-tag": "^2.10.1"
+    "graphql-tag": "^2.10.1",
+    "graphql": "^14.3.0"
   },
   "repository": {
     "type": "git",
