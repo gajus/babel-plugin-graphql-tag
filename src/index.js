@@ -87,7 +87,7 @@ export default declare((api, options) => {
       }
     }
 
-    if (options.transform && options.transform) {
+    if (options.transform) {
       queryDocument = options.transform(finalSource, queryDocument);
     }
 
